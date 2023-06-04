@@ -1,0 +1,35 @@
+name: Gradle Gralvm build
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        required: true
+        type: string
+      graalvm_version:
+        required: true
+        type: string
+      build_opts:
+        type: string
+
+jobs:
+  build:
+    name: Build "${{ github.ref_name }}" in ${{ github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          version: ${{ inputs.graalvm_version }}
+          java-version: ${{ inputs.java_version }}
+          components: 'native-image'
+          cache: 'gradle'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gradle setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Gradle build
+        run: ./gradlew build ${{ inputs.build_opts }}
